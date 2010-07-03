@@ -4,23 +4,23 @@ class dbInfo {
   public $tables;
   public $debug = true;
 
-  function loadFromDb() {
-    $con = Propel::getConnection();
-
+  function loadFromDb() {    
     
-    $stmt = $con->prepare("SHOW TABLES LIKE '%'");
-    $stmt->execute();
-    $stmt->setFetchMode(PDO::FETCH_NUM);
-
-    if($stmt->rowCount()==0) return false;
+  	$stmt = $this->executeQuery("SHOW TABLES LIKE '%'");
+    
+  	/**
+  	 * commented ->rowCount because not compatible with new Propel PDO
+  	 * @author radu
+  	 *
+  	 * if($stmt->rowCount()==0) return false;
+  	 */
     while($row = $stmt->fetch()) {
         $name = $row[0];
         $this->tables[$name] = array();
     };
-
+    
     foreach($this->tables as $table => $null) {
-      $stmt = $con->prepare("show create table `".$table."`");
-      $stmt->execute();
+      $stmt = $this->executeQuery("show create table `".$table."`");
       $row = $stmt->fetch();
       $create_table = $row[1];
       $this->getTableInfoFromCreate($create_table);

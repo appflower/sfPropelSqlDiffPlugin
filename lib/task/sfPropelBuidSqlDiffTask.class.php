@@ -56,7 +56,9 @@ EOF;
       $this->logSection("propel-sql-diff", "no difference found");
     }
     $this->logSection('propel-sql-diff', "writing file $filename");
-    file_put_contents($filename, $diff);
+    file_put_contents($filename, 'SET foreign_key_checks = 0;
+    '.$diff.'
+    SET foreign_key_checks = 1;');
 
   }
 }

@@ -13,6 +13,13 @@ Currently it handles:
 
 Plugin is in beta state now. It is tested only for mysql. You can discuss it at [http://www.symfony-project.org/forum/index.php/t/10679/ thread in symfony forum]
 
+== Installation ==
+
+  {{{
+  symfony plugin-install http://plugins.symfony-project.com/sfPropelSqlDiffPlugin
+  symfony cc
+  }}}
+
 == Usage ==
 
 After making changes in schema.yml
@@ -29,7 +36,7 @@ To execute diff.sql
   
 To run model rebuild and apply database changes to database 
   {{{
-  symfony propel-build-all-diff frontend
+  symfony propel-update-all frontend
   }}}
 
 == Changelog ==
@@ -40,7 +47,7 @@ To run model rebuild and apply database changes to database
  
 === 0.1.2 ===
 
- * added task propel-build-all
+ * added task propel-update-all
  * fixed problem with short open tags
  * fixed problem with "foreign key constraint fails" error during diff.sql execution
  
