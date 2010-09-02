@@ -41,7 +41,7 @@ EOF;
 
     $this->logSection("propel-sql-diff", "building database patch");
 
-    $configuration = ProjectConfiguration::getApplicationConfiguration($arguments['application'], $options['env'], true);
+    $configuration = ProjectConfiguration::getActive();
     $databaseManager = new sfDatabaseManager($configuration);
     
     $i = new dbInfo();
