@@ -9,14 +9,12 @@ class sfPropelBuildSqlDiffTask extends sfPropelBaseTask
    */
   protected function configure()
   {
-    $this->addArguments(array(
-      new sfCommandArgument('application', sfCommandArgument::REQUIRED, 'The application name'),
-    ));
-
     $this->addOptions(array(
+      new sfCommandOption('application', null, sfCommandOption::PARAMETER_REQUIRED, 'The application name'),
       new sfCommandOption('env', null, sfCommandOption::PARAMETER_REQUIRED, 'The environment', 'dev'),
+      new sfCommandOption('connection', null, sfCommandOption::PARAMETER_REQUIRED, 'The connection name', 'propel'),
     ));
-    
+          
     $this->aliases = array('propel-build-sql-diff');
     $this->namespace = 'propel';
     $this->name = 'build-sql-diff';
@@ -35,30 +33,42 @@ EOF;
    */
   protected function execute($arguments = array(), $options = array())
   {
+    $databaseManager = new sfDatabaseManager($this->configuration);
+    $connection = $databaseManager->getDatabase($options['connection'] ? $options['connection'] : null)->getConnection();
+        
     $buildSql = new sfPropelBuildSqlTask($this->dispatcher, $this->formatter);
     $buildSql->setCommandApplication($this->commandApplication);
     $buildSql->run();
 
-    $this->logSection("propel-sql-diff", "building database patch");
-
-    $configuration = ProjectConfiguration::getActive();
-    $databaseManager = new sfDatabaseManager($configuration);
+    $this->logSection("sql-diff", "building database patch");
     
     $i = new dbInfo();
-    $i->loadFromDb();
+    $i->loadFromDb(Propel::getConnection($options['connection']));
 
     $i2 = new dbInfo();
-    $i2->loadAllFilesInDir(sfConfig::get('sf_data_dir').'/sql');
-    $diff = $i->getDiffWith($i2);
-
-    $filename = sfConfig::get('sf_data_dir').'/sql/diff.sql';
-    if($diff=='') {
-      $this->logSection("propel-sql-diff", "no difference found");
+    
+    $sqlDir = sfConfig::get('sf_data_dir').'/sql';
+    $dbmap = file("$sqlDir/sqldb.map");
+    foreach($dbmap as $mapline) {
+        if($mapline[0]=='#') continue; //it is a comment
+        list($sqlfile, $dbname) = explode('=', trim($mapline));
+        if($dbname == $options['connection']) {
+            if (file_exists("$sqlDir/$sqlfile")) { // added by Jeck
+                $i2->loadFromFile("$sqlDir/$sqlfile");
+            }
+        }
     }
-    $this->logSection('propel-sql-diff', "writing file $filename");
-    file_put_contents($filename, 'SET foreign_key_checks = 0;
-    '.$diff.'
-    SET foreign_key_checks = 1;');
+    $i -> checkForeignKeys($i2);
+    $diff = $i->getDiffWith($i2);
+    $filenameOld = sfConfig::get('sf_data_dir').'/sql/diff.sql';
+    $filename = sfConfig::get('sf_data_dir')."/sql/{$options['connection']}.diff.sql";
+    if($diff=='') {
+      $this->logSection("sql-diff", "no difference found");
+    }
+    $this->logSection('sql-diff', "writing file $filename");
+    file_put_contents($filename, $diff);
+    $this->logSection('sql-diff', "writing file $filenameOld"); // added by Jeck for backwards compatibility
+    file_put_contents($filenameOld, $diff);
 
   }
 }
