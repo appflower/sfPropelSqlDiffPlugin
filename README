@@ -2,8 +2,20 @@
 [[PageOutline]]
 
 sfPropelSqlDiff plugin generate diff.sql file, which contains difference beetween schema.yml and current database structure.
+Modified by Jeck Lamnent, added checkForeignKeys() and moved some code into functions.
 
 == Description ==
+
+function checkForeignKeys()
+ 
+ This function checks if a foreign key'd column matches the foreign table's column type
+ If they don't match then it drops the foreign key and sets the foreign key'd column's type 
+ to the foreign table's column type and then adds back the foreign key. This is a solution
+ I made this to fix mismatched column types that stopped fkeys from being created.
+ Use at your own risk as I've only tested this on my db.
+
+ It is automatically called in sfPropelBuidSqlDiffTask.class.php where you can also remove it.
+ 
 It provides new symfony task - propel-build-sql-diff which will create file diff.sql with ALTER TABLE statements, whitch will make current database structure 
 exactly as it described schema.yml without deleting data in tables as it does propel-build-sql task.
 
@@ -12,13 +24,6 @@ Currently it handles:
  - changing fields/indexes/foreign keys
 
 Plugin is in beta state now. It is tested only for mysql. You can discuss it at [http://www.symfony-project.org/forum/index.php/t/10679/ thread in symfony forum]
-
-== Installation ==
-
-  {{{
-  symfony plugin-install http://plugins.symfony-project.com/sfPropelSqlDiffPlugin
-  symfony cc
-  }}}
 
 == Usage ==
 
@@ -36,7 +41,7 @@ To execute diff.sql
   
 To run model rebuild and apply database changes to database 
   {{{
-  symfony propel-update-all frontend
+  symfony propel-build-all-diff frontend
   }}}
 
 == Changelog ==
@@ -47,7 +52,7 @@ To run model rebuild and apply database changes to database
  
 === 0.1.2 ===
 
- * added task propel-update-all
+ * added task propel-build-all
  * fixed problem with short open tags
  * fixed problem with "foreign key constraint fails" error during diff.sql execution
  
