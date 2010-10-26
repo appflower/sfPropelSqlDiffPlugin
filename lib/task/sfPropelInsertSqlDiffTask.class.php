@@ -43,7 +43,7 @@ EOF;
     $filename = sfConfig::get('sf_data_dir')."/sql/{$options['connection']}.diff.sql";
     $this->logSection("sql-diff", "executing file $filename");
     $i = new dbInfo();
-    $i->executeSql(file_get_contents($filename), Propel::getConnection($options['connection']));
+    $i->executeSql("SET FOREIGN_KEY_CHECKS=0;\n".file_get_contents($filename)."\nSET FOREIGN_KEY_CHECKS=1;", Propel::getConnection($options['connection']));
   }
 }
 
