@@ -315,7 +315,7 @@ public function checkForeignKeys(&$db_info2) {
     }
   private function dropDeletedTables(&$db_info2, $tablename) {
         if(!isset($db_info2->tables[$tablename])) {
-            $this -> _diffSqlPre .= "DROP TABLE `$tablename`;\n";
+            $this -> _diffSqlPre .= "DROP TABLE IF EXISTS `$tablename`;\n";
             return 1;
         }
     }
