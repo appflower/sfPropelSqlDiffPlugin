@@ -28,30 +28,6 @@ class dbInfo {
 
     return true;
   }
-  
-  function loadFromDbForTables($con, $tables) {
-    $stmt = $con->prepare("SHOW FULL TABLES");
-    $stmt->execute();
-    $stmt->setFetchMode(PDO::FETCH_NUM);
-
-    if($stmt->rowCount()==0) return false;
-    while($row = $stmt->fetch()) {
-        if(strtoupper($row[1])=="BASE TABLE") {
-        	if(!in_array($row[0], $tables)) continue;
-            $this->tables[$row[0]] = array();
-        }
-    };
-    foreach($this->tables as $table => $null) {
-    	  if(!in_array($table, $tables)) continue;
-          $stmt = $con->prepare("show create table `".$table."`");
-          $stmt->execute();
-          $row = $stmt->fetch();
-          $create_table = $row[1];
-          $this->getTableInfoFromCreate($create_table);
-    }
-
-    return true;
-  }
 
   public function loadFromFile($filename) {
     $dump = file_get_contents($filename);
@@ -461,17 +437,6 @@ public function checkForeignKeys(&$db_info2) {
     return $stmt;
   }
   
-  public static function getTableNamesFromFile($filename) {
-  	$tables = array();
-    $dump = file_get_contents($filename);
-    preg_match_all('/create table ([^\'";]+|\'[^\']*\'|"[^"]*")+;/i', $dump, $matches);
-    foreach($matches[0] as $key=>$value) {
-        preg_match("/^\s*create table `?([^\s`]+)`?\s+\((.*)\)([^\)]*)$/mis", $value, $matches);
-    	$table = $matches[1];
-    	$tables[] = $table;
-    }
-    return $tables;
-  }
   
 };
 ?>
