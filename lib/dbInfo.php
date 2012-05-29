@@ -403,7 +403,10 @@ public function checkForeignKeys(&$db_info2) {
       } 
     };
 
-    return $this -> _diffSqlPre . $diff_sql . $this -> _diffSqlSuc;
+    $diff = $this -> _diffSqlPre . $diff_sql . $this -> _diffSqlSuc;
+    $diff = str_replace('Type=InnoDB','Engine=InnoDB',$diff);
+    
+    return $diff;
   }
 
   private function get_fk_name_by_field($tablename, $fieldname) {
